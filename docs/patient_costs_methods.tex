@@ -1,0 +1,656 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={MDR TB bedaquiline or amikacin costing study: Generating patient-level cost data},
+            pdfauthor={Nathan Green},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{MDR TB bedaquiline or amikacin costing study: Generating patient-level
+cost data}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Nathan Green}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{14/11/2018}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\begin{document}
+\maketitle
+
+This document gives some of the methods and data of the initial part of
+the analysis for circulation.
+
+\hypertarget{look-up-costs}{%
+\subsection{Look-up costs}\label{look-up-costs}}
+
+The cost have been obtained from 4 centres. They are not complete at
+time of writing. I have therefore crudely used the minimum, maximum and
+mean value across observed values in centres.
+
+Also, hospital stay costs are scaled from 4\% to 24\% for different
+centre. Baseline values are fixed £2429 for stays under 20 days and £208
+for each day thereafter.
+
+The raw, and minimum, mean and maximum imputed cost matrices are:
+
+\begin{longtable}[]{@{}rrrrrrrrrrrrr@{}}
+\toprule
+centre\_costid & centre\_patientid & bed\_under20d & bed\_over20d & PICC
+& hick & OPAT & blood\_amak & blood\_liver & blood\_renal & hear & ECG &
+scaling\tabularnewline
+\midrule
+\endhead
+1 & 1 & 3016.089 & 258.2736 & 69 & 0 & 102 & 7.50 & 3.80 & 3.19 & 0.0 &
+153 & 1.2417\tabularnewline
+2 & 4 & 2945.162 & 252.2000 & NA & NA & 148 & 7.50 & 2.65 & 1.62 & NA &
+25 & 1.2125\tabularnewline
+3 & 2 & 2538.062 & 217.3392 & NA & NA & 100 & NA & NA & NA & 33.0 & 124
+& 1.0449\tabularnewline
+4 & 3 & 2962.408 & 253.6768 & 200 & 200 & NA & 29.56 & 11.82 & 9.45 &
+34.5 & 15 & 1.2196\tabularnewline
+\bottomrule
+\end{longtable}
+
+Table 1: Original data
+
+\begin{longtable}[]{@{}rrrrrrrrrrrrr@{}}
+\toprule
+centre\_costid & centre\_patientid & bed\_under20d & bed\_over20d & PICC
+& hick & OPAT & blood\_amak & blood\_liver & blood\_renal & hear & ECG &
+scaling\tabularnewline
+\midrule
+\endhead
+1 & 1 & 3016.09 & 258.27 & 69 & 0 & 102 & 7.50 & 3.80 & 3.19 & 0.0 & 153
+& 1.24\tabularnewline
+2 & 4 & 2945.16 & 252.20 & 69 & 0 & 148 & 7.50 & 2.65 & 1.62 & 0.0 & 25
+& 1.21\tabularnewline
+3 & 2 & 2538.06 & 217.34 & 69 & 0 & 100 & 7.50 & 2.65 & 1.62 & 33.0 &
+124 & 1.04\tabularnewline
+4 & 3 & 2962.41 & 253.68 & 200 & 200 & 100 & 29.56 & 11.82 & 9.45 & 34.5
+& 15 & 1.22\tabularnewline
+\bottomrule
+\end{longtable}
+
+Table 2: Fill with minimum values
+
+\begin{longtable}[]{@{}rrrrrrrrrrrrr@{}}
+\toprule
+centre\_costid & centre\_patientid & bed\_under20d & bed\_over20d & PICC
+& hick & OPAT & blood\_amak & blood\_liver & blood\_renal & hear & ECG &
+scaling\tabularnewline
+\midrule
+\endhead
+1 & 1 & 3016.09 & 258.27 & 69.0 & 0 & 102.00 & 7.50 & 3.80 & 3.19 & 0.0
+& 153 & 1.24\tabularnewline
+2 & 4 & 2945.16 & 252.20 & 134.5 & 100 & 148.00 & 7.50 & 2.65 & 1.62 &
+22.5 & 25 & 1.21\tabularnewline
+3 & 2 & 2538.06 & 217.34 & 134.5 & 100 & 100.00 & 14.85 & 6.09 & 4.75 &
+33.0 & 124 & 1.04\tabularnewline
+4 & 3 & 2962.41 & 253.68 & 200.0 & 200 & 116.67 & 29.56 & 11.82 & 9.45 &
+34.5 & 15 & 1.22\tabularnewline
+\bottomrule
+\end{longtable}
+
+Table 3: Fill with mean values
+
+\begin{longtable}[]{@{}rrrrrrrrrrrrr@{}}
+\toprule
+centre\_costid & centre\_patientid & bed\_under20d & bed\_over20d & PICC
+& hick & OPAT & blood\_amak & blood\_liver & blood\_renal & hear & ECG &
+scaling\tabularnewline
+\midrule
+\endhead
+1 & 1 & 3016.09 & 258.27 & 69 & 0 & 102 & 7.50 & 3.80 & 3.19 & 0.0 & 153
+& 1.24\tabularnewline
+2 & 4 & 2945.16 & 252.20 & 200 & 200 & 148 & 7.50 & 2.65 & 1.62 & 34.5 &
+25 & 1.21\tabularnewline
+3 & 2 & 2538.06 & 217.34 & 200 & 200 & 100 & 29.56 & 11.82 & 9.45 & 33.0
+& 124 & 1.04\tabularnewline
+4 & 3 & 2962.41 & 253.68 & 200 & 200 & 148 & 29.56 & 11.82 & 9.45 & 34.5
+& 15 & 1.22\tabularnewline
+\bottomrule
+\end{longtable}
+
+Table 4: Fill with maximum values
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{bed\_under20d} is cost of hosptial stay fixed up to 19 days
+\item
+  \texttt{bed\_over20d} is the daily cost of hospital stay for every day
+  over 19 days
+\item
+  \texttt{PICC} is the cost of a PICC line
+\item
+  \texttt{hick} is the cost of a Hickman line
+\item
+  \texttt{blood\ amik} is the cost of a blood test
+\item
+  \texttt{blood\ liver} is the cost of a blood test
+\item
+  \texttt{blood\ renal} is the cost of a blood test
+\item
+  \texttt{hear} is the cost of a hearing test
+\item
+  \texttt{ECG} is the cost of an ECG
+\item
+  \texttt{scaling} is the centre specific cost scaling
+\end{itemize}
+
+Note that the provided cost and patient data do not use the same ids
+(represented here by \texttt{centre\_costid} and
+\texttt{centre\_patientid}).
+
+The total cost of bedaquiline treatment is £18000 for a duration of 24
+weeks. The idealised duration of amikacin treatment is 24 or 32 weeks.
+Therefore, we scale the bedaquiline cost for an equivalent 32 weeks
+period of £24000 too.
+
+\hypertarget{scenarios}{%
+\subsection{Scenarios}\label{scenarios}}
+
+Cost are considered for 12 main scenarios. These can be grouped in to
+observed injection vs ideal injection scenarios, and observed injection
+vs tablets scenarios. For the comparison bedaquiline scenarios hospital
+length of stay is scaled by a predefined value to represent shorter
+symptom duration.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+\begin{minipage}[b]{0.08\columnwidth}\raggedright
+No.\strut
+\end{minipage} & \begin{minipage}[b]{0.41\columnwidth}\raggedright
+Baseline\strut
+\end{minipage} & \begin{minipage}[b]{0.41\columnwidth}\raggedright
+Comparison\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+1a\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection observed\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 6 months; same hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+1b\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection observed\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 6 months; 90\% hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+1c\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection observed\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 6 months; 66\% hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+2a\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection ideal 6 months\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 6 months; same hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+2b\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection ideal 6 months\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 6 months; 90\% hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+2c\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection ideal 6 months\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 6 months; 66\% hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+3a\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection ideal 8 months\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 8 months; same hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+3b\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection ideal 8 months\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 8 months; 90\% hospital length of stay\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright
+3c\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Amikacin injection ideal 8 months\strut
+\end{minipage} & \begin{minipage}[t]{0.41\columnwidth}\raggedright
+Bedaquiline tablets 8 months; 66\% hospital length of stay\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+So, for each set of costs (minimum, mean, maximum) and each treatment
+scenario, in total there are 9 x 3 = 27 scenarios to consider.
+
+\hypertarget{patient-level-cost-calculation}{%
+\subsubsection{Patient-level cost
+calculation}\label{patient-level-cost-calculation}}
+
+The costs for each scenario consist of the following:
+
+\hypertarget{observed-and-idealised-injectable}{%
+\paragraph{Observed and idealised
+injectable}\label{observed-and-idealised-injectable}}
+
+\begin{itemize}
+\tightlist
+\item
+  Time in hospital (from observed data)
+\item
+  OPAT daily in discharge period (observed, up to 6 or 8 months)
+\item
+  Number of lines (Hickman, PICC) in discharge period (observed, up to 6
+  or 8 months)
+\item
+  Number of monthly hearing tests in discharge period (observed, up to 6
+  or 8 months)
+\item
+  Number of weekly blood tests (observed, up to 6 or 8 months)
+\end{itemize}
+
+\hypertarget{bedaquiline}{%
+\paragraph{Bedaquiline}\label{bedaquiline}}
+
+\begin{itemize}
+\tightlist
+\item
+  Time in hospital from observed data (possible scaled downwards)
+\item
+  Monthly ECG and blood tests (renal, LFT) in discharge period (up to 6
+  or 8 months)
+\item
+  Total fixed cost of treatment (up to 6 or 8 months)
+\end{itemize}
+
+\hypertarget{estimated-number-of-events}{%
+\subsubsection{Estimated number of
+events}\label{estimated-number-of-events}}
+
+For the idealised scenarios we need to estimate how many Hickman and
+PICC lines would occur for each individual in the fixed period. We do
+this by estimating a pooled weekly rate for each from the total sample.
+We then calculate each according to their duration on treatment after
+hospital discharge.
+
+\hypertarget{patient-time-to-event-equations}{%
+\subsubsection{Patient time to event
+equations}\label{patient-time-to-event-equations}}
+
+Initial hospital length of stay \[
+t_{adm}=d_{hosp\_end}-d_{IV\_start}
+\]
+
+Out-patient (OP) duration \[
+t_{OP}= \left\{
+\begin{array}{ll}
+d_{IV\_end}-d_{hosp\_end} \;\; \text{for observed scenarios}\\
+t_{Tx} - t_{adm} \;\; \text{for non-observed scenarios}
+\end{array}
+\right.
+\] where \[
+t_{Tx} = 24, 32
+\]
+
+Total hospital length of stay including readmissions \[
+t_{adm}^{inj}=t_{adm}+t_{readm}
+\]
+
+Total hospital length of stay for bedaquiline \[
+t_{adm}^{bdq}=\rho t_{adm}+t_{readm}, \; \; 0\le\rho\le1
+\]
+
+Total out-patient duration for amikacin \[
+t_{OP}^{inj}=\max{\left\{t_{OP}-t_{readm}, 0\right\}}
+\]
+
+Total out-patient duration for bedaquiline \[
+t_{OP}^{bdq}=\max{\left\{t_{OP}-t_{readm}+(1-\rho)t_{adm},0\right\}}
+\]
+
+Estimated number of Hickman and PICC lines \[
+\hat{n}_{hick} = t_{OP}^{inj} \frac{\sum n_{hick}}{\sum t_{OP}^{inj}}, \;\; \hat{n}_{PICC} = t_{OP}^{inj} \frac{\sum n_{PICC}}{\sum t_{OP}^{inj}} 
+\]
+
+\hypertarget{total-cost-equations}{%
+\subsubsection{Total cost equations}\label{total-cost-equations}}
+
+\begin{itemize}
+\tightlist
+\item
+  Bedaquiline tablets
+\end{itemize}
+
+\[
+c_{bdq}^i=\left[c_{bed<20}+\max{\left\{t_{adm}^{bdq}-19,0\right\}}c_{bed\nless20}\right]+\left\lfloor\frac{t_{OP}^{bdq}}{7}\right\rfloor\left(c_{ECG}+c_{renal}+c_{liver}\right)+c_{bdq}
+\]
+
+\begin{itemize}
+\tightlist
+\item
+  Observed injectible amikacin
+\end{itemize}
+
+\[
+c_{amik}^i=\left[c_{bed<20}+\max{\left\{t_{adm}^{inj}-19,0\right\}}c_{bed\nless20}\right]+c_{hick}n_{hick}^i+c_{PICC}n_{PICC}^i+c_{OP}t_{OP}^i+c_{hear}n_{hear}^i
+\]
+
+\begin{itemize}
+\tightlist
+\item
+  Ideal injectible amikacin
+\end{itemize}
+
+\[
+c_{amik,ideal}^i=\left[c_{bed<20}+\max{\left\{t_{adm}^{inj}-19,0\right\}}c_{bed\nless20}\right]+c_{hick}\hat{n}_{hick}^i+c_{PICC}\hat{n}_{PICC}^i+c_{OPAT}\hat{t}^{i}_{OP}+c_{hear}\hat{n}_{hear}^i
+\]
+
+\hypertarget{results}{%
+\subsection{Results}\label{results}}
+
+\hypertarget{patient-level-data}{%
+\subsubsection{Patient-level data}\label{patient-level-data}}
+
+Each patient's cost is calculated using the costs for their particular
+site. Their times to events and counts are available (\texttt{obs}). The
+analysis data thus consist of the original recorded data, the derived
+counts and times and the total cost per patient.
+
+\begin{verbatim}
+## 
+## Attaching package: 'kableExtra'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:dplyr':
+## 
+##     group_rows
+\end{verbatim}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|r|r|r|r|r}
+\hline
+\multicolumn{1}{c|}{ } & \multicolumn{1}{c|}{ } & \multicolumn{1}{c|}{Observed treatment} & \multicolumn{3}{c}{6 months treatment} \\
+\cline{3-3} \cline{4-6}
+  & Mean costs & No change & No change & 10\% reduction & 33\% reduction\\
+\hline
+PICC line & 134.50 & 0.99 & 0.93 & 0.93 & 0.93\\
+\hline
+Hickman line & 100.00 & 0.09 & 0.09 & 0.09 & 0.09\\
+\hline
+Hearing test & 22.50 & 4.04 & 3.95 & 3.95 & 3.95\\
+\hline
+Renal test & 4.75 & 4.42 & 4.42 & 4.65 & 5.08\\
+\hline
+Liver test & 6.09 & 4.42 & 4.42 & 4.65 & 5.08\\
+\hline
+ECG & 79.25 & 4.42 & 4.42 & 4.65 & 5.08\\
+\hline
+Fixed admission < 20 days & 2865.43 & 0.31 & 0.31 & 0.31 & 0.36\\
+\hline
+Admission >= 20 days per day & 245.37 & 55.93 & 55.93 & 48.49 & 31.40\\
+\hline
+Bedaquiline total & 18000.00 & NA & NA & NA & NA\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{tabular}{r|r|r|r|r|r|r|r|r|r|r|r|r|r}
+\hline
+0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13\\
+\hline
+12 & 16 & 13 & 11 & 8 & 9 & 5 & 1 & 6 & 5 & 3 & 1 & 4 & 1\\
+\hline
+\end{tabular}
+
+\begin{verbatim}
+##   Group.1        x
+## 1       1 6.066667
+## 2       2 2.444444
+## 3       3 5.608696
+## 4       4 3.266667
+\end{verbatim}
+
+\begin{verbatim}
+##   Group.1   x
+## 1       1  91
+## 2       2  66
+## 3       3 129
+## 4       4  98
+\end{verbatim}
+
+Table 5: Number of hearing tests
+
+\begin{tabular}{l|l|l|l}
+\hline
+0 & 1 & 2 & 3\\
+\hline
+22 & 58 & 9 & 6\\
+\hline
+\end{tabular}
+
+\begin{verbatim}
+##   Group.1         x
+## 1       1 1.0666667
+## 2       2 0.7407407
+## 3       3 0.8260870
+## 4       4 1.3000000
+\end{verbatim}
+
+\begin{verbatim}
+##   Group.1  x
+## 1       1 16
+## 2       2 20
+## 3       3 19
+## 4       4 39
+\end{verbatim}
+
+Table 6: Number of picc lines
+
+\begin{tabular}{l|l|l}
+\hline
+0 & 1 & 2\\
+\hline
+87 & 7 & 1\\
+\hline
+\end{tabular}
+
+\begin{verbatim}
+##   Group.1          x
+## 1       1 0.00000000
+## 2       2 0.03703704
+## 3       3 0.13043478
+## 4       4 0.16666667
+\end{verbatim}
+
+\begin{verbatim}
+##   Group.1 x
+## 1       1 0
+## 2       2 1
+## 3       3 3
+## 4       4 5
+\end{verbatim}
+
+Table 7: Number of Hickman lines
+
+\begin{verbatim}
+##   Group.1         x
+## 1       1  83.46667
+## 2       2 108.33333
+## 3       3  53.04348
+## 4       4 167.10000
+\end{verbatim}
+
+\begin{verbatim}
+##   Group.1    x
+## 1       1 1252
+## 2       2 2925
+## 3       3 1220
+## 4       4 5013
+\end{verbatim}
+
+Table 8: Number of OPAT\_days\_inj
+
+\begin{verbatim}
+##   Group.1        x
+## 1       1 5.333333
+## 2       2 4.444444
+## 3       3 4.130435
+## 4       4 4.166667
+\end{verbatim}
+
+\begin{verbatim}
+##   Group.1   x
+## 1       1  80
+## 2       2 120
+## 3       3  95
+## 4       4 125
+\end{verbatim}
+
+Table 9: Number of visits for ECG, liver and renal tests
+
+\begin{figure}
+\centering
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-10-1.pdf}
+\caption{Out-patient weeks for bdq}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-11-1.pdf}
+\caption{Total admission weeks for bdq}
+\end{figure}
+
+Below we give the individual total costs for each scenario (unit cost
+table and length of stay) histograms for amikacin (red) vs bedaquiline
+(blue).
+
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-1.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-2.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-3.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-4.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-5.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-6.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-7.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-8.pdf}
+\includegraphics{patient_costs_methods_files/figure-latex/unnamed-chunk-12-9.pdf}
+
+For each scenario the summary costs are given below.
+
+
+\end{document}

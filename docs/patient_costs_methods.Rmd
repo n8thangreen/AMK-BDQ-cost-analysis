@@ -1,0 +1,336 @@
+---
+title: 'MDR TB bedaquiline or amikacin costing study: Generating patient-level cost data'
+author: "Nathan Green"
+date: "14/11/2018"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: 
+    keep_tex: yes
+editor_options: 
+  chunk_output_type: console
+always_allow_html: yes
+---
+
+```{r setup, include = TRUE, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(fig.width = 12, fig.height = 8) 
+```
+
+```{r}
+suppressMessages(library(dplyr))
+suppressMessages(library(purrr))
+suppressMessages(library(captioner))
+```
+
+
+This document gives some of the methods and data of the initial part of the analysis for circulation.
+
+## Look-up costs
+
+The cost have been obtained from 4 centres.
+They are not complete at time of writing.
+I have therefore crudely used the minimum, maximum and mean value across observed values in centres.
+
+Also, hospital stay costs are scaled from 4\% to 24\% for different centre.
+Baseline values are fixed \£2429 for stays under 20 days and \£208 for each day thereafter.
+
+The raw, and minimum, mean and maximum imputed cost matrices are:
+
+```{r}
+# why are roundings different??
+tab_nums <- captioner(prefix = "Table")
+
+load(here::here("data", "costs.RData"))
+
+knitr::kable(costs$raw)
+```
+
+`r tab_nums("original_data", "Original data")`
+
+```{r}
+knitr::kable(costs$min)
+```
+
+`r tab_nums("min_data", "Fill with minimum values")`
+
+```{r}
+knitr::kable(costs$mean)
+```
+
+`r tab_nums("mean_data", "Fill with mean values")`
+
+```{r}
+knitr::kable(costs$max)
+```
+
+`r tab_nums("max_data", "Fill with maximum values")`
+
+
+- `bed_under20d` is cost of hosptial stay fixed up to 19 days
+- `bed_over20d` is the daily cost of hospital stay for every day over 19 days
+- `PICC` is the cost of a PICC line
+- `hick` is the cost of a Hickman line
+- `blood amik` is the cost of a blood test
+- `blood liver` is the cost of a blood test
+- `blood renal` is the cost of a blood test
+- `hear` is the cost of a hearing test
+- `ECG` is the cost of an ECG
+- `scaling` is the centre specific cost scaling
+
+Note that the provided cost and patient data do not use the same ids (represented here by `centre_costid` and `centre_patientid`).
+
+```{r echo=FALSE}
+load(here::here("data", "cost_bdq.RData"))
+```
+
+The total cost of bedaquiline treatment is \£`r format(cost_bdq$rho0.obs, scientific = FALSE)` for a duration of `r 4*6` weeks.
+The idealised duration of amikacin treatment is `r 4*6`  or `r 4*8` weeks.
+Therefore, we scale the bedaquiline cost for an equivalent `r 4*8` weeks period of \£`r format(cost_bdq$rho0.8mo_days, scientific = FALSE)` too.
+
+
+## Scenarios
+
+Cost are considered for 12 main scenarios.
+These can be grouped in to observed injection vs ideal injection  scenarios, and observed injection vs tablets scenarios.
+For the comparison bedaquiline scenarios hospital length of stay is scaled by a predefined value to represent shorter symptom duration.
+
+
+No. | Baseline        | Comparison
+--- | --------------- | ---------------
+1a  | Amikacin injection observed | Bedaquiline tablets 6 months; same hospital length of stay 
+1b  | Amikacin injection observed | Bedaquiline tablets 6 months; 90\% hospital length of stay 
+1c  | Amikacin injection observed | Bedaquiline tablets 6 months; 66\% hospital length of stay 
+|
+2a  | Amikacin injection ideal 6 months | Bedaquiline tablets 6 months; same hospital length of stay 
+2b  | Amikacin injection ideal 6 months | Bedaquiline tablets 6 months; 90\% hospital length of stay 
+2c  | Amikacin injection ideal 6 months | Bedaquiline tablets 6 months; 66\% hospital length of stay 
+|
+3a  | Amikacin injection ideal 8 months | Bedaquiline tablets 8 months; same hospital length of stay 
+3b  | Amikacin injection ideal 8 months | Bedaquiline tablets 8 months; 90\% hospital length of stay 
+3c  | Amikacin injection ideal 8 months | Bedaquiline tablets 8 months; 66\% hospital length of stay 
+
+So, for each set of costs (minimum, mean, maximum) and each treatment scenario, in total there are 9 x 3 = 27 scenarios to consider.
+
+
+### Patient-level cost calculation
+
+The costs for each scenario consist of the following:
+
+#### Observed and idealised injectable
+* Time in hospital (from observed data)
+* OPAT daily in discharge period (observed, up to 6 or 8 months)
+* Number of lines (Hickman, PICC) in discharge period (observed, up to 6 or 8 months)
+* Number of monthly hearing tests in discharge period (observed, up to 6 or 8 months)
+* Number of weekly blood tests (observed, up to 6 or 8 months)
+
+#### Bedaquiline
+* Time in hospital from observed data (possible scaled downwards)
+* Monthly ECG and blood tests (renal, LFT) in discharge period (up to 6 or 8 months)
+* Total fixed cost of treatment (up to 6 or 8 months)
+
+
+### Estimated number of events
+For the idealised scenarios we need to estimate how many Hickman and PICC lines would occur for each individual in the fixed period.
+We do this by estimating a pooled weekly rate for each from the total sample.
+We then calculate each according to their duration on treatment after hospital discharge.
+
+
+### Patient time to event equations
+
+Initial hospital length of stay
+$$
+t_{adm}=d_{hosp\_end}-d_{IV\_start}
+$$
+
+Out-patient (OP) duration
+$$
+t_{OP}= \left\{
+\begin{array}{ll}
+d_{IV\_end}-d_{hosp\_end} \;\; \text{for observed scenarios}\\
+t_{Tx} - t_{adm} \;\; \text{for non-observed scenarios}
+\end{array}
+\right.
+$$
+where
+$$
+t_{Tx} = 24, 32
+$$
+
+Total hospital length of stay including readmissions
+$$
+t_{adm}^{inj}=t_{adm}+t_{readm}
+$$
+
+Total hospital length of stay for bedaquiline
+$$
+t_{adm}^{bdq}=\rho t_{adm}+t_{readm}, \; \; 0\le\rho\le1
+$$
+
+Total out-patient duration for amikacin 
+$$
+t_{OP}^{inj}=\max{\left\{t_{OP}-t_{readm}, 0\right\}}
+$$
+
+Total out-patient duration for bedaquiline
+$$
+t_{OP}^{bdq}=\max{\left\{t_{OP}-t_{readm}+(1-\rho)t_{adm},0\right\}}
+$$
+
+Estimated number of Hickman and PICC lines
+$$
+\hat{n}_{hick} = t_{OP}^{inj} \frac{\sum n_{hick}}{\sum t_{OP}^{inj}}, \;\; \hat{n}_{PICC} = t_{OP}^{inj} \frac{\sum n_{PICC}}{\sum t_{OP}^{inj}} 
+$$
+
+
+### Total cost equations
+
+* Bedaquiline tablets
+
+$$
+c_{bdq}^i=\left[c_{bed<20}+\max{\left\{t_{adm}^{bdq}-19,0\right\}}c_{bed\nless20}\right]+\left\lfloor\frac{t_{OP}^{bdq}}{7}\right\rfloor\left(c_{ECG}+c_{renal}+c_{liver}\right)+c_{bdq}
+$$
+
+* Observed injectible amikacin
+
+$$
+c_{amik}^i=\left[c_{bed<20}+\max{\left\{t_{adm}^{inj}-19,0\right\}}c_{bed\nless20}\right]+c_{hick}n_{hick}^i+c_{PICC}n_{PICC}^i+c_{OP}t_{OP}^i+c_{hear}n_{hear}^i
+$$
+
+* Ideal injectible amikacin
+
+$$
+c_{amik,ideal}^i=\left[c_{bed<20}+\max{\left\{t_{adm}^{inj}-19,0\right\}}c_{bed\nless20}\right]+c_{hick}\hat{n}_{hick}^i+c_{PICC}\hat{n}_{PICC}^i+c_{OPAT}\hat{t}^{i}_{OP}+c_{hear}\hat{n}_{hear}^i
+$$
+
+
+## Results
+
+### Patient-level data
+
+Each patient's cost is calculated using the costs for their particular site.
+Their times to events and counts are available (`obs`).
+The analysis data thus consist of the original recorded data, the derived counts and times and the total cost per patient.
+
+```{r}
+load(here::here("raw-data", "data_cleaned.RData"))
+
+source(here::here("raw-data", "paper_table.R"))
+```
+
+
+
+```{r eval = FALSE, fig.cap="Patient total costs by hospital length of stay for amikacin treatment. Blue and red lines are for 8 and 6 week regimens respectively."}
+knitr::include_graphics("../plots/cost_by_los.png", dpi = 100)
+```
+
+
+```{r hearing_test}
+knitr::kable(t(table(data$rho0.obs$num_hearing_tests)))
+
+aggregate(data$rho0.obs$num_hearing_tests, by = list(data$rho0.obs$centre_patientid), FUN = "mean")
+aggregate(data$rho0.obs$num_hearing_tests, by = list(data$rho0.obs$centre_patientid), FUN = "sum")
+```
+
+`r tab_nums("num_hearing_tests", "Number of hearing tests")`
+
+
+```{r picc_line}
+knitr::kable(t(table(data$rho0.obs$num_picc_line)), align = 'l')
+
+aggregate(data$rho0.obs$num_picc_line, by = list(data$rho0.obs$centre_patientid), FUN = "mean")
+aggregate(data$rho0.obs$num_picc_line, by = list(data$rho0.obs$centre_patientid), FUN = "sum")
+```
+
+`r tab_nums("num_picc_line", "Number of picc lines")`
+
+
+```{r hickman_lines}
+knitr::kable(t(table(data$rho0.obs$num_hickman_line)), align = 'l')
+
+aggregate(data$rho0.obs$num_hickman_line, by = list(data$rho0.obs$centre_patientid), FUN = "mean")
+aggregate(data$rho0.obs$num_hickman_line, by = list(data$rho0.obs$centre_patientid), FUN = "sum")
+```
+
+`r tab_nums("num_hickman_line", "Number of Hickman lines")`
+
+```{r OPAT_days}
+aggregate(data$rho0.obs$OPAT_days_inj, by = list(data$rho0.obs$centre_patientid), FUN = "mean")
+aggregate(data$rho0.obs$OPAT_days_inj, by = list(data$rho0.obs$centre_patientid), FUN = "sum")
+```
+
+`r tab_nums("OPAT_days_inj", "Number of OPAT_days_inj")`
+
+```{r num_visits}
+library(purrr)
+ECG_freq_weeks <- c(1,0,1, rep(c(0,0,0,1), 200)) #monthly
+
+num_visits <- costAnalysis::count_events(num_weeks  = data$rho0.6mo_days$OP_days_bdq/7,
+                                         freq_weeks = ECG_freq_weeks)
+
+aggregate(num_visits, by = list(data$rho0.obs$centre_patientid), FUN = "mean")
+aggregate(num_visits, by = list(data$rho0.obs$centre_patientid), FUN = "sum")
+```
+
+`r tab_nums("num_visits", "Number of visits for ECG, liver and renal tests")`
+
+
+```{r fig.cap="Out-patient weeks for bdq"}
+OP_days_bdq <- purrr::map(data, "OP_days_bdq")
+par(mfrow = c(3,3))
+for (i in seq_along(OP_days_bdq)) {
+  hist(OP_days_bdq[[i]]/7, breaks = 50, main = names(OP_days_bdq)[i], xlab = "weeks")
+}
+```
+
+```{r fig.cap="Total admission weeks for bdq"}
+total_admission_weeks_bdq <- purrr::map(data, "total_admission_weeks_bdq")
+par(mfrow = c(3,3))
+for (i in seq_along(total_admission_weeks_bdq)) {
+  hist(as.numeric(total_admission_weeks_bdq[[i]]/7), breaks = 100,
+       main = names(total_admission_weeks_bdq)[i],
+       xlab = "weeks", ylim = c(0,18), xlim = c(0,11))
+}
+```
+
+Below we give the individual total costs for each scenario (unit cost table and length of stay) histograms for amikacin (red) vs bedaquiline (blue).
+
+```{r fig.height = 3}
+load(here::here("data", "data.RData"))
+BREAKS <- seq(0, 200000, 2000)
+
+par(mfrow = c(1,3))
+
+for (i in seq_along(data_input)) {
+  
+  hist(data_input[[i]]$mean$cost_inj, breaks = BREAKS, col = rgb(1,0,0,0.5), ylim = c(0,30), xlab = "cost", main = paste(names(data_input)[i], "mean"))
+  hist(data_input[[i]]$mean$cost_pill, breaks = BREAKS, add = TRUE, col = rgb(0,0,1,0.5))
+  
+  hist(data_input[[i]]$max$cost_inj, breaks = BREAKS, col = rgb(1,0,0,0.5), ylim = c(0,30), xlab = "cost", main = paste(names(data_input)[i], "max"))
+  hist(data_input[[i]]$max$cost_pill, breaks = BREAKS, add = TRUE, col = rgb(0,0,1,0.5))
+  
+  hist(data_input[[i]]$min$cost_inj, breaks = BREAKS, col = rgb(1,0,0,0.5), ylim = c(0,30), xlab = "cost", main = paste(names(data_input)[i], "min"))
+  hist(data_input[[i]]$min$cost_pill, breaks = BREAKS, add = TRUE, col = rgb(0,0,1,0.5))
+}
+```
+
+
+For each scenario the summary costs are given below.
+
+```{r, eval = FALSE, warning = FALSE, comment = NA}
+#Raw data summary statistics (excluding durations):
+xx <-
+  lapply(data, function(x) {
+    apply(x, 2, function(x)
+      suppressWarnings(summary(as.numeric(x), na.rm = TRUE))) %>%
+      do.call("rbind", .) %>%
+      na.omit()
+  })
+
+
+for (i in seq_along(xx)) {
+  
+  knitr::kable(x = xx[[i]]) %>% 
+    print()
+}
+```

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Nathan Green" />
+
+<meta name="date" content="2018-07-12" />
+
+<title>MDR TB bedaquiline or amikacin costing study: Bayesian modelling</title>
+
+<script src="Bayesian_methods_and_results_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="Bayesian_methods_and_results_files/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="Bayesian_methods_and_results_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="Bayesian_methods_and_results_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="Bayesian_methods_and_results_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="Bayesian_methods_and_results_files/navigation-1.1/tabsets.js"></script>
+<link href="Bayesian_methods_and_results_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="Bayesian_methods_and_results_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">MDR TB bedaquiline or amikacin costing study: Bayesian modelling</h1>
+<h4 class="author"><em>Nathan Green</em></h4>
+<h4 class="date"><em>07/12/2018</em></h4>
+
+</div>
+
+
+<div id="model" class="section level2">
+<h2>Model</h2>
+<p>For the amikacin costs <span class="math inline">\(c_0\)</span> and bedaquiline costs <span class="math inline">\(c_1\)</span> the hierarchical model is</p>
+<p><span class="math display">\[
+log(c_i) \sim t(\mu_c, \sigma^2_c, 4)
+\]</span> <span class="math display">\[
+\mu_c \sim N(\mu_s, \sigma^2_s)
+\]</span></p>
+<p>Vague prior distributions:</p>
+<p><span class="math display">\[
+\mu_s \sim N(0, 0.000001)
+\]</span></p>
+<p><span class="math display">\[
+log(\sigma_s) \sim U(-5,10)
+\]</span> <span class="math display">\[
+\mu_c \sim N(0, 0.000001)
+\]</span></p>
+<p><span class="math display">\[
+log(\sigma_c) \sim U(-5,10)
+\]</span></p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>We use a multi-level Bayesian model. Levels are at patient and centre. Times and frequencies for injectable treatment are used as baseline (<code>c0</code>).</p>
+<p>Posterior distributions summary statistics are given below for each scenario.</p>
+<ul>
+<li><code>delta_c</code> is the difference between the two scenarios i.e. <code>c1 - c0</code>.</li>
+<li><code>thresh</code> is the exceedance threshold probability that bedaquiline is more costly than amikacin i.e. <code>c1 - c0 &gt; 0</code>.</li>
+<li><code>m.cX.Y</code> is the mean cost for intervention <code>X</code> at centre <code>Y</code></li>
+<li><code>m.centreX</code> is the overall mean cost for intervention <code>X</code></li>
+</ul>
+<pre><code>## $rho0_obs
+##         name     mean       sd   median       min      max    n
+## 1  m.centre1 26679.86 5964.198 26135.67  4498.391 76483.17 1840
+## 2  m.centre2 32734.42 2033.330 32707.75 19779.520 46493.63 1840
+## 3     m.c1.1 18071.32 2377.749 17914.57 11710.395 30395.51 1840
+## 4     m.c1.2 26064.51 1990.923 25971.62 19883.448 34150.39 1840
+## 5     m.c1.3 24163.57 2158.882 24081.14 17650.407 34911.38 1840
+## 6     m.c1.4 35087.32 2935.365 35075.89 26477.326 49212.04 1840
+## 7     m.c2.1 30265.37 2433.530 30560.87 22422.412 36288.15 1840
+## 8     m.c2.2 32096.79 1702.317 31958.59 26824.611 38753.22 1840
+## 9     m.c2.3 32505.45 1958.321 32349.58 26732.961 41885.82 1840
+## 10    m.c2.4 32643.27 1887.862 32514.05 27173.396 41177.56 1840
+## 
+## $rho0.1_obs
+##         name     mean       sd   median       min      max    n
+## 1  m.centre1 24778.32 5595.315 24295.48  1480.056 67826.58 1840
+## 2  m.centre2 29210.19 2202.733 29158.38 10425.841 75128.63 1840
+## 3     m.c1.1 17651.89 2325.029 17509.07 11236.432 27489.15 1840
+## 4     m.c1.2 25459.90 1905.430 25412.80 19728.905 33318.13 1840
+## 5     m.c1.3 23591.31 2078.179 23450.53 17796.951 33195.46 1840
+## 6     m.c1.4 34416.17 2929.571 34280.46 26623.886 46703.59 1840
+## 7     m.c2.1 29759.47 2110.746 30019.63 21705.008 36526.32 1840
+## 8     m.c2.2 31367.40 1556.589 31330.04 25905.945 38519.77 1840
+## 9     m.c2.3 31692.72 1744.972 31562.82 25944.617 39637.98 1840
+## 10    m.c2.4 31784.13 1665.092 31658.59 25801.831 38659.21 1840
+## 
+## $rho0.33_obs
+##         name     mean       sd   median       min      max    n
+## 1  m.centre1 24727.96 5322.036 24296.21  2924.687 83618.21 1840
+## 2  m.centre2 26535.57 1172.325 26477.02 21623.380 44849.58 1840
+## 3     m.c1.1 18146.19 2383.026 18009.70 10874.988 26834.71 1840
+## 4     m.c1.2 25955.36 2021.555 25865.23 19797.996 33705.79 1840
+## 5     m.c1.3 24185.05 2162.716 24086.17 17923.621 32283.87 1840
+## 6     m.c1.4 35096.99 2956.389 34859.33 27165.512 48751.60 1840
+## 7     m.c2.1 26791.54 1333.670 26932.01 21810.381 30698.45 1840
+## 8     m.c2.2 27776.56 1053.615 27686.09 24210.820 32141.89 1840
+## 9     m.c2.3 27857.88 1174.712 27730.09 22854.116 33037.64 1840
+## 10    m.c2.4 27981.50 1093.085 27895.46 24649.677 33986.70 1840
+## 
+## $rho0_6mo_days
+##         name     mean       sd   median       min      max    n
+## 1  m.centre1 25243.70 3335.829 25063.24  2646.611 57476.30 1840
+## 2  m.centre2 30289.09 2029.828 30200.48 16349.459 72971.42 1840
+## 3     m.c1.1 21646.61 1190.155 21576.47 18184.325 25864.93 1840
+## 4     m.c1.2 23621.72 1043.359 23622.63 20339.536 28119.43 1840
+## 5     m.c1.3 26959.63 1285.540 26847.96 23440.110 31642.23 1840
+## 6     m.c1.4 30698.49 1149.275 30654.29 27231.203 34925.00 1840
+## 7     m.c2.1 29432.24 2218.616 29745.92 21248.830 36928.31 1840
+## 8     m.c2.2 30935.04 1612.859 30912.91 24620.174 36915.03 1840
+## 9     m.c2.3 31375.95 1931.547 31241.70 25157.456 40207.79 1840
+## 10    m.c2.4 31378.42 1755.868 31237.14 25489.322 40765.26 1840
+## 
+## $rho0.1_6mo_days
+##         name     mean       sd   median       min      max    n
+## 1  m.centre1 26053.00 3550.682 25821.45  7681.585 78642.89 1840
+## 2  m.centre2 29366.71 1586.237 29339.59 13594.086 39993.38 1840
+## 3     m.c1.1 21704.52 1175.351 21646.66 17936.360 25692.45 1840
+## 4     m.c1.2 23698.66 1017.908 23670.50 20715.863 27139.78 1840
+## 5     m.c1.3 27005.48 1244.757 26937.03 23419.245 31913.12 1840
+## 6     m.c1.4 30816.86 1137.006 30738.64 27525.335 35450.34 1840
+## 7     m.c2.1 28389.72 1843.015 28624.65 21172.720 34130.22 1840
+## 8     m.c2.2 29535.65 1444.801 29486.32 24105.570 34831.94 1840
+## 9     m.c2.3 29799.02 1582.793 29731.37 24490.913 36255.37 1840
+## 10    m.c2.4 29913.17 1519.231 29786.47 25812.000 36944.04 1840
+## 
+## $rho0.33_6mo_days
+##         name     mean       sd   median      min      max    n
+## 1  m.centre1 25494.46 3684.127 25249.18 10138.02 85852.71 1840
+## 2  m.centre2 26494.88 1042.844 26477.70 20513.25 38061.12 1840
+## 3     m.c1.1 21683.79 1152.846 21609.80 17607.57 27381.98 1840
+## 4     m.c1.2 23639.00 1014.800 23607.71 20600.39 27685.44 1840
+## 5     m.c1.3 27041.81 1252.324 26999.11 22718.22 32621.74 1840
+## 6     m.c1.4 30775.68 1135.263 30711.53 26536.49 35265.13 1840
+## 7     m.c2.1 26111.17 1246.894 26222.44 20782.60 30577.56 1840
+## 8     m.c2.2 26900.84 1044.168 26851.47 23541.55 31192.50 1840
+## 9     m.c2.3 26905.33 1115.333 26860.39 23019.91 32337.30 1840
+## 10    m.c2.4 27012.03 1007.382 26951.23 24259.75 30616.64 1840
+## 
+## $rho0_8mo_days
+##         name     mean       sd   median      min      max    n
+## 1  m.centre1 32311.23 4785.766 31921.33 13016.44 96246.06 1840
+## 2  m.centre2 36644.70 1957.188 36599.51 21228.09 59162.66 1840
+## 3     m.c1.1 27310.61 1167.623 27255.12 24055.08 31961.77 1840
+## 4     m.c1.2 29258.18 1028.094 29232.69 26100.50 33285.29 1840
+## 5     m.c1.3 33676.09 1255.452 33649.35 29944.27 38712.63 1840
+## 6     m.c1.4 39158.87 1124.254 39164.20 35224.90 44204.12 1840
+## 7     m.c2.1 35486.76 2194.267 35758.24 26494.91 41506.66 1840
+## 8     m.c2.2 36969.63 1687.921 36869.00 31576.96 44440.67 1840
+## 9     m.c2.3 37294.99 1793.909 37115.75 31448.24 47626.93 1840
+## 10    m.c2.4 37333.84 1733.341 37224.54 31971.90 46219.28 1840
+## 
+## $rho0.1_8mo_days
+##         name     mean        sd   median      min      max    n
+## 1  m.centre1 34487.92 4402.5354 34224.82 17294.04 66891.43 1840
+## 2  m.centre2 37169.93 1729.7569 37136.72 21511.30 48341.44 1840
+## 3     m.c1.1 27346.99 1131.5708 27301.05 23768.32 32039.76 1840
+## 4     m.c1.2 29343.20  994.3732 29331.96 25728.52 33755.64 1840
+## 5     m.c1.3 33794.90 1280.3639 33782.53 29748.04 39258.70 1840
+## 6     m.c1.4 39324.06 1204.5398 39284.03 35351.85 43351.92 1840
+## 7     m.c2.1 34514.19 1883.8403 34699.00 27495.51 40831.82 1840
+## 8     m.c2.2 35716.80 1434.1070 35684.63 28751.33 43019.81 1840
+## 9     m.c2.3 35983.56 1616.2063 35883.63 30787.34 42946.41 1840
+## 10    m.c2.4 36033.64 1500.8562 35915.44 30549.70 41919.13 1840
+## 
+## $rho0.33_8mo_days
+##         name     mean        sd   median       min      max    n
+## 1  m.centre1 31834.73 4420.4126 31452.27  4070.611 98170.81 1840
+## 2  m.centre2 32687.85 1085.0286 32676.77 20100.141 37075.23 1840
+## 3     m.c1.1 27287.65 1145.0764 27236.13 23045.812 31508.40 1840
+## 4     m.c1.2 29312.47  995.5567 29293.92 26241.981 32960.66 1840
+## 5     m.c1.3 33731.25 1289.8594 33700.49 30200.103 38410.21 1840
+## 6     m.c1.4 39252.52 1111.9721 39239.04 35436.537 42987.45 1840
+## 7     m.c2.1 32229.54 1280.1174 32334.47 26324.363 35728.84 1840
+## 8     m.c2.2 33035.03 1018.7699 32982.37 29451.748 36989.57 1840
+## 9     m.c2.3 33046.69 1102.7529 32988.21 29290.352 38090.17 1840
+## 10    m.c2.4 33147.80 1015.1064 33071.10 29892.395 38726.95 1840</code></pre>
+<p>For example, if we scale the bedaquillin hospital length of stay by some 0 &lt; <span class="math inline">\(\rho\)</span> &lt; 1 and compare with the baseline then the posterior distributions of mean costs are given below. The red histogram is bedaquiline and the white for injectables.</p>
+<div class="figure">
+<img src="C:/Users/ngreen1/Google%20Drive/bedaquiline%20amikacin%20cost%20analysis/costAnalysis/plots/cost-histograms_dt.png" alt="Mean costs posterior distributions with mean values substituted for missing costs." width="800px" />
+<p class="caption">
+Mean costs posterior distributions with mean values substituted for missing costs.
+</p>
+</div>
+<div class="figure">
+<img src="C:/Users/ngreen1/Google%20Drive/bedaquiline%20amikacin%20cost%20analysis/costAnalysis/plots/density_strips_dt.png" alt="Difference in mean costs posterior distributions with mean values substituted for missing costs." width="800px" />
+<p class="caption">
+Difference in mean costs posterior distributions with mean values substituted for missing costs.
+</p>
+</div>
+<div id="posterior-predictive-checking" class="section level3">
+<h3>Posterior predictive checking</h3>
+<p>To check the fit of the model we generate sample of individual-level costs from the posterior distribution and compare with the observed data.</p>
+<div class="figure">
+<img src="../plots/ppc_c1_grid_dt.png" alt="Posterior predictive checks for individual-level amikacin cost data." width="1000px" />
+<p class="caption">
+Posterior predictive checks for individual-level amikacin cost data.
+</p>
+</div>
+<div class="figure">
+<img src="../plots/ppc_c2_grid_dt.png" alt="Posterior predictive checks for individual-level bedaquiline cost data." width="1000px" />
+<p class="caption">
+Posterior predictive checks for individual-level bedaquiline cost data.
+</p>
+</div>
+</div>
+<div id="cost-sensitivity-analysis" class="section level3">
+<h3>Cost sensitivity analysis</h3>
+</div>
+<div id="between-centre-costs" class="section level3">
+<h3>Between centre costs</h3>
+<p>At the centre level, if we focus on the baseline scenario <code>c_0</code> then the posterior mean distributions on cost for each centre are:</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
