@@ -1,0 +1,60 @@
+
+model {
+
+  ## bdq vs amik
+
+  for(j in 1:n){
+    #c1[j] ~ dnorm(mu.c[child[j],1], lambda[1])   #amik
+    #c2[j] ~ dnorm(mu.c[child[j],2], lambda[2])   #bdq
+
+    c1[j] ~ dt(mu.c[child[j],1], lambda[1], 4)   #amik
+    c2[j] ~ dt(mu.c[child[j],2], lambda[2], 4)   #bdq
+  }
+
+  for (i in 1:s){
+    mu.c[i,1] ~ dnorm(mu.centre[1], tau.centre[1])
+    mu.c[i,2] ~ dnorm(mu.centre[2], tau.centre[2])
+  }
+
+  ## node transformations
+  for (t in 1:2) {
+  	lambda[t] <- 1/sigma2.c[t]					  # precision for within centre log costs
+		sigma.c[t] <- exp(logsigma.c[t])			# sd for within centre costs
+		sigma2.c[t] <- pow(sigma.c[t], 2)			# variance for within centre costs
+
+    tau.centre[t] <- 1/sigma2.centre[t]					  # precision for between centre log costs
+    sigma.centre[t] <- exp(logsigma.centre[t])		# sd for between centre costs
+    sigma2.centre[t] <- pow(sigma.centre[t], 2)		# variance for between centre costs
+
+    ## prior distributions
+    mu.centre[t] ~ dnorm(0, 1.0E-6)			  # mean costs (log scale)
+		logsigma.c[t] ~ dunif(-5, 10)			    # log-sd for within centre costs
+    logsigma.centre[t] ~ dunif(-5, 10)		# log-sd for between centre costs
+  }
+
+  #delta_c <- exp(mu.centre[2]) - exp(mu.centre[1])
+  #thresh <- step(delta_c)
+
+  ## reverse transformations
+  #mu.centre_nat[1] <- exp(mu.centre[1])
+  #mu.centre_nat[2] <- exp(mu.centre[2])
+  #sigma.c_nat[1] <- exp(sigma.c[1])
+  #sigma.c_nat[2] <- exp(sigma.c[2])
+  #sigma.centre_nat[1] <- exp(sigma.centre[1])
+  #sigma.centre_nat[2] <- exp(sigma.centre[2])
+
+  for (j in 1:n) {
+    ## posterior predictions
+  	#c1.rep[j] ~ dnorm(mu.c[child[j],1], lambda[1])
+  	#c2.rep[j] ~ dnorm(mu.c[child[j],2], lambda[2])
+
+  	c1.rep[j] ~ dt(mu.c[child[j],1], lambda[1], 4)
+  	c2.rep[j] ~ dt(mu.c[child[j],2], lambda[2], 4)
+
+    ## Bayesian p-value
+    c1.ppost[j] <- step(c1.rep[j] - c1[j])
+    c2.ppost[j] <- step(c2.rep[j] - c2[j])
+  }
+
+}
+
