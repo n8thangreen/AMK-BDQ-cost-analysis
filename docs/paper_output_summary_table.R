@@ -13,13 +13,13 @@
 #
 #           | Scenario      | Cost AK(sd; £)	| Cost BDQ(sd; £)	| Cost BDQ-cost AK(sd; £)	| P(BDQ cost-saving) | Max cost BDQ for P(cost-saving)≥0.95
 # Observed  |               |
-# AK vs BDQ	| 0%  reduction |
+# AK vs BDQ | 0%  reduction |
 #           | 10% reduction |
 #           | 33% reduction |
 # 24 weeks  | 0%  reduction |
 # AK vs BDQ | 10% reduction |
 #           | 33% reduction |
-#
+# ...
 
 
 library(dplyr)
@@ -28,7 +28,9 @@ library(kableExtra)
 
 
 ## read-in density strip data from scripts.R
-load("data/denstrip_dat.RData")
+# load(here::here("data/denstrip_dat.RData"))
+load(here::here("data/denstrip_all.RData")); denstrip_dat <- denstrip_all
+load(here::here("data/m_centre_long2.RData"))
 
 
 # AK_stats <- map_df(summary_table, function(x) x[1, ])
@@ -44,7 +46,8 @@ thresh_unitbdq <- NULL
 for (bdq in seq(4000, 18000, by = 100)) {
 
   thresh_unitbdq <- rbind(thresh_unitbdq,
-                          c(bdq = bdq, apply(denstrip_dat, 2, function(x) sum(x - 18000 + bdq < 0)/length(x))))
+                          c(bdq = bdq, apply(denstrip_dat, 2,
+                                             function(x) sum(x - 18000 + bdq < 0)/length(x))))
 }
 
 cbdq_0.95 <-
@@ -85,8 +88,12 @@ out_tab <-
   )
 
 
-
+# Viewer pane
 print(
    out_tab %>%
     kable() %>%
     kable_styling("striped"))
+
+# export
+write.csv(out_tab, file = here::here("output", "out_tab.csv"))
+

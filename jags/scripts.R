@@ -25,7 +25,7 @@ library(purrr)
 
 source(here::here("jags", "Utils.R"))
 
-# data_input: IPD costs of treatments
+# data_input: list by scenario of IPD costs of treatments
 load(here::here("data", "data.RData"))
 
 # extract from list means for bdq and amik and create single dataframe
@@ -90,25 +90,26 @@ dataJags <-
            n = nrow(ldat),
            c1 = ldat$rho0.33.6mo_days.cost_inj, # patient cost amik
            c2 = ldat$rho0.33.6mo_days.cost_pill,# patient cost bdq
+           child = ldat$centre),
+    # 6 months bdq vs 8 months amik
+    rho0_6mbdq_8mamik =
+      list(s = n_centre,
+           n = nrow(ldat),
+           c1 = ldat$rho0.8mo_days.cost_inj,    # patient cost amik
+           c2 = ldat$rho0.6mo_days.cost_pill,   # patient cost bdq
+           child = ldat$centre),
+    rho0.1_6mbdq_8mamik =
+      list(s = n_centre,
+           n = nrow(ldat),
+           c1 = ldat$rho0.1.8mo_days.cost_inj,  # patient cost amik
+           c2 = ldat$rho0.1.6mo_days.cost_pill, # patient cost bdq
+           child = ldat$centre),
+    rho0.33_6mbdq_8mamik =
+      list(s = n_centre,
+           n = nrow(ldat),
+           c1 = ldat$rho0.33.8mo_days.cost_inj, # patient cost amik
+           c2 = ldat$rho0.33.6mo_days.cost_pill,# patient cost bdq
            child = ldat$centre)#,
-    ## 6 months bdq vs 8 months amik
-    # rho0_6mbdq_8mamik =
-    #   list(s = n_centre,
-    #        n = nrow(ldat),
-    #        c1 = ldat$rho0.8mo_days.cost_inj,    # patient cost amik
-    #        c2 = ldat$rho0.6mo_days.cost_pill,   # patient cost bdq
-    #        child = ldat$centre),
-    # rho0.1_6mbdq_8mamik =
-    #   list(s = n_centre,
-    #        n = nrow(ldat),
-    #        c1 = ldat$rho0.1.8mo_days.cost_inj,  # patient cost amik
-    #        c2 = ldat$rho0.1.6mo_days.cost_pill, # patient cost bdq
-    #        child = ldat$centre),
-    # rho0.33_6mbdq_8mamik =
-    #   list(s = n_centre,
-    #        n = nrow(ldat),
-    #        c1 = ldat$rho0.33.8mo_days.cost_inj, # patient cost amik
-    #        c2 = ldat$rho0.33.6mo_days.cost_pill,# patient cost bdq
     ## 8 months both treatment
     # rho0_8mo_days =
     #   list(s = n_centre,
@@ -386,7 +387,16 @@ colnames(m.centre_long)[3] <- "bdq"
 ##TODO##
 ## fudge: repeat sims that should have the same value anyway
 # m.center_temp <- m.centre_long
-# j: 1) rho0_obs 2) rho0.1_obs 3) rho0.33_obs 4) rho0_6mo_days 5) rho0.1_6mo_days 6) rho0.33_6mo_days
+# j: 1) rho0_obs
+#    2) rho0.1_obs
+#    3) rho0.33_obs
+#    4) rho0_6mo_days
+#    5) rho0.1_6mo_days
+#    6) rho0.33_6mo_days
+#    7) rho0_6mbdq_8mamik
+#    8) rho0.1_6mbdq_8mamik
+#    9) rho0.33_6mbdq_8mamik
+
 m.centre_long[m.centre_long[ ,"j"] == 2, "amik"] <- m.centre_long[m.centre_long[ ,"j"] == 1, "amik"]
 m.centre_long[m.centre_long[ ,"j"] == 3, "amik"] <- m.centre_long[m.centre_long[ ,"j"] == 1, "amik"]
 m.centre_long[m.centre_long[ ,"j"] == 5, "amik"] <- m.centre_long[m.centre_long[ ,"j"] == 4, "amik"]
@@ -395,11 +405,22 @@ m.centre_long[m.centre_long[ ,"j"] == 4, "bdq"] <-  m.centre_long[m.centre_long[
 m.centre_long[m.centre_long[ ,"j"] == 2, "bdq"] <-  m.centre_long[m.centre_long[ ,"j"] == 5, "bdq"]
 m.centre_long[m.centre_long[ ,"j"] == 3, "bdq"] <-  m.centre_long[m.centre_long[ ,"j"] == 6, "bdq"]
 
+m.centre_long[m.centre_long[ ,"j"] == 7, "bdq"] <-  m.centre_long[m.centre_long[ ,"j"] == 4, "bdq"]
+m.centre_long[m.centre_long[ ,"j"] == 8, "bdq"] <-  m.centre_long[m.centre_long[ ,"j"] == 5, "bdq"]
+m.centre_long[m.centre_long[ ,"j"] == 9, "bdq"] <-  m.centre_long[m.centre_long[ ,"j"] == 6, "bdq"]
+m.centre_long[m.centre_long[ ,"j"] == 7, "amik"] <-  m.centre_long[m.centre_long[ ,"j"] == 8, "amik"]
+m.centre_long[m.centre_long[ ,"j"] == 9, "amik"] <-  m.centre_long[m.centre_long[ ,"j"] == 8, "amik"]
+
 # trim outliers
-m.centre_long <- m.centre_long[m.centre_long[, "amik"] < 50000, ]
-m.centre_long <- m.centre_long[m.centre_long[, "bdq"] < 50000, ]
+MAX_COST <- 50000
+m.centre_long <- m.centre_long[m.centre_long[, "amik"] < MAX_COST, ]
+m.centre_long <- m.centre_long[m.centre_long[, "bdq"] < MAX_COST, ]
 
 
+
+# from [j |amik| bda| delta] to [j |variable| value]
+# where variable is {amik,bdq,delta}
+# then append Tx an rho
 m.centre_long2 <- reshape2::melt(data.frame(m.centre_long), id.vars = "j")
 m.centre_long2 <- merge(m.centre_long2,
                         data.frame(j = 1:9,
@@ -407,11 +428,13 @@ m.centre_long2 <- merge(m.centre_long2,
                                    rho = c(0, 0.1, 0.33)),
                         by = "j")
 
-m.centre_long2 <- m.centre_long2[m.centre_long2$Tx != "8 months", ]
+hist_dat <- m.centre_long2[m.centre_long2$Tx != "8 months", ]
+
+
 
 # histogram
 p <-
-  ggplot(m.centre_long2, aes(x = value, fill = variable)) +
+  ggplot(hist_dat, aes(x = value, fill = variable)) +
   geom_histogram(position = "identity", binwidth = 50, alpha = 0.7) +
   # geom_freqpoly(position = "identity", binwidth = 500, alpha = 0.7) +
   facet_grid(rho ~ Tx, labeller = labeller(Tx = as_labeller(c("6 months" = "6 months of injectables",
@@ -437,6 +460,7 @@ p <-
 p
 
 p_bw <- p + scale_color_grey() + scale_fill_grey(labels = c("Amikacin", "Bedaquiline"))
+p_bw
 
 # export
 ggsave(p,
@@ -445,6 +469,8 @@ ggsave(p,
 ggsave(p_bw,
        filename = here::here("plots", "cost-histograms_bw.tiff"),
        width = 25, height = 25, units = "cm", dpi = 300)
+
+save(m.centre_long2, file = "data/m_centre_long2.RData")
 
 
 # density strip plot -----------------------------------------------------
@@ -465,6 +491,9 @@ delta_c_all[[3]] <- delta_c_all[[3]][delta_c_all[[3]] < 40000]
 delta_c_all[[4]] <- delta_c_all[[4]][delta_c_all[[4]] < 40000]
 delta_c_all[[5]] <- delta_c_all[[5]][delta_c_all[[5]] < 40000]
 delta_c_all[[6]] <- delta_c_all[[6]][delta_c_all[[6]] < 40000]
+delta_c_all[[7]] <- delta_c_all[[7]][delta_c_all[[7]] < 40000]
+delta_c_all[[8]] <- delta_c_all[[8]][delta_c_all[[8]] < 40000]
+delta_c_all[[9]] <- delta_c_all[[9]][delta_c_all[[9]] < 40000]
 
 delta_c_all[[1]] <- delta_c_all[[1]][delta_c_all[[1]] > -40000]
 delta_c_all[[2]] <- delta_c_all[[2]][delta_c_all[[2]] > -40000]
@@ -472,14 +501,32 @@ delta_c_all[[3]] <- delta_c_all[[3]][delta_c_all[[3]] > -40000]
 delta_c_all[[4]] <- delta_c_all[[4]][delta_c_all[[4]] > -40000]
 delta_c_all[[5]] <- delta_c_all[[5]][delta_c_all[[5]] > -40000]
 delta_c_all[[6]] <- delta_c_all[[6]][delta_c_all[[6]] > -40000]
+delta_c_all[[7]] <- delta_c_all[[7]][delta_c_all[[7]] > -40000]
+delta_c_all[[8]] <- delta_c_all[[8]][delta_c_all[[8]] > -40000]
+delta_c_all[[9]] <- delta_c_all[[9]][delta_c_all[[9]] > -40000]
 
 denstrip_dat <- do.call(cbind, delta_c_all[1:6])
+denstrip_all <- do.call(cbind, delta_c_all[1:9])
+# denstrip_dat <- denstrip_all
 
 x11(width = 14)
 # png(filename = here::here("plots", "density_strips.png"),
 #     width = 1000, height = 700,
 #     units = "px", res = 300)
 # tiff(filename = here::here("plots", "density_strips.tiff"),
+
+LABELS <- c(
+  "Observed amikacin vs bedaquiline; equal length of stay",
+  "Observed amikacin vs bedaquiline; 10% reduction in admission",
+  "Observed amikacin vs bedaquiline; 33% reduction in admission",
+  "6 months amikacin vs bedaquiline; equal length of stay",
+  "6 months amikacin vs bedaquiline; 10% reduction in admission",
+  "6 months amikacin vs bedaquiline; 33% reduction in admission"#,
+  # "8 months amikacin and 6 months bedaquiline durations; equal length of stay",
+  # "8 months amikacin and 6 months bedaquiline durations; 90% length of stay",
+  # "8 months amikacin and 6 months bedaquiline durations; 66% length of stay"
+)
+
 tiff(filename = here::here("plots", "density_strips_bw.tiff"),
      width = 3000, height = 2000,
      units = "px", res = 300)
@@ -493,17 +540,7 @@ mycaterplot(denstrip_dat,
             val.lim = c(-20000, 30000),
             reorder = FALSE,
             # labels = names(dataJags),
-            labels = c(
-              "Observed amikacin vs bedaquiline; equal length of stay",
-              "Observed amikacin vs bedaquiline; 10% reduction in admission",
-              "Observed amikacin vs bedaquiline; 33% reduction in admission",
-              "6 months amikacin vs bedaquiline; equal length of stay",
-              "6 months amikacin vs bedaquiline; 10% reduction in admission",
-              "6 months amikacin vs bedaquiline; 33% reduction in admission"
-              # "8 months amikacin and bedaquiline durations; equal length of stay",
-              # "8 months amikacin and bedaquiline durations; 90% length of stay",
-              # "8 months amikacin and bedaquiline durations; 66% length of stay"
-            ),
+            labels = LABELS,
             style = "plain",
             col = "grey",
             cex.labels = 1)
@@ -518,6 +555,7 @@ dev.off()
 
 
 save(denstrip_dat, file = "data/denstrip_dat.RData")
+save(denstrip_all, file = "data/denstrip_all.RData")
 
 
 #################################
