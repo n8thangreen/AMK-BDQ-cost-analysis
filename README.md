@@ -20,12 +20,12 @@ a result of more rapid culture conversion.
 
   - The patient costs analysis can be found
     [here](docs/patient_costs_methods.pdf)
-  - Details of the Bayesian modellingy using jags can be found
+  - Details of the Bayesian modelling using jags can be found
     [here](docs/Bayesian_methods_and_results.pdf)
 
 ## Installation
 
-You can install the GitHub version of costAnalysis with:
+You can install the GitHub version of `AMK-BDQ-cost-analysis` with:
 
 ``` r
 devtools::install_github("n8thangreen/AMK-BDQ-cost-analysis")
