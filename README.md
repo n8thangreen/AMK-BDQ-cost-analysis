@@ -3,6 +3,8 @@
 
 # A cost comparison of amikacin therapy with bedaquiline, for drug-resistant tuberculosis. How the 2019 WHO recommendations impact UK costs
 
+## Background
+
 Prioritisation of oral bedaquiline over the injectable agents in the
 treatment of multidrug-resistant Tuberculosis (MDR-TB) in the World
 Health Organisations (WHO) 2019 guidelines prompted this UK analysis of
@@ -14,6 +16,8 @@ is close to cost neutral compared with injectable therapy, especially
 if, as expected, some reduction in duration of admission is possible as
 a result of more rapid culture conversion.
 
+## Analysis
+
   - The patient costs analysis can be found
     [here](docs/patient_costs_methods.pdf)
   - Details of the Bayesian modellingy using jags can be found
@@ -21,9 +25,17 @@ a result of more rapid culture conversion.
 
 ## Installation
 
-You can install the released version of costAnalysis from
-[CRAN](https://CRAN.R-project.org) with:
+You can install the GitHub version of costAnalysis with:
 
 ``` r
-install.packages("costAnalysisv2")
+devtools::install_github("n8thangreen/AMK-BDQ-cost-analysis")
 ```
+
+## Output
+
+The final paper is
+
+  - [K. Manalan, N. Green and A. Arnold et al., A cost comparison of
+    amikacin therapy with bedaquiline, for drug resistant tuberculosis
+    in the UK, Journal of Infection,
+    https://doi.org/10.1016/j.jinf.2019.09.006](docs/PIIS0163445319302774.pdf)
